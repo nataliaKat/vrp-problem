@@ -68,5 +68,10 @@ class Route:
         self.capacity = cap
         self.load = 0
 
+    def printRoute(self):
+        nodes_string = ""
+        for node in self.sequenceOfNodes:
+            nodes_string += str(node.id) + ", "
+        print(nodes_string)
 
 

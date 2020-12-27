@@ -33,15 +33,16 @@ class Solver:
         # self.bestSolution = None
         # self.overallBestSol = None
         self.rcl_size = 1 #isws gia arxh na to kaname 1
+        self.try_to_put_in_route=[False for r in range(self.total_vehicles)]
 
     def solve(self):
         self.setRoutedFlagToFalseForAllServiceLocations()
-        self.minimumInsertions()
-        #self.applyNearestNeighborMethod()
+        #self.minimumInsertions()
+        self.applyNearestNeighborMethod()
         print("Time is", self.sol.time_cost)
         for r in self.sol.routes:
             r.printRoute()
-        SolDrawer.draw(1, self.sol, self.all_nodes)
+        SolDrawer.draw(3, self.sol, self.all_nodes)
 
     def setRoutedFlagToFalseForAllServiceLocations(self):
         for i in range(0, len(self.service_locations)):
@@ -108,33 +109,46 @@ class Solver:
         modelIsFeasible = True
         self.sol = Solution()
         insertions = 0
+        self.openAllPaths()
         while (insertions < len(self.service_locations)):
             bestInsertion = ServiceLocationInsertion()
-            lastOpenRoute: Route = self.getLastOpenRoute()
+            shortestroute: Route = self.getShortestRoute()
 
-            if lastOpenRoute is not None:
-                self.identifyBest_NN_ofLastVisited(bestInsertion, lastOpenRoute, itr)
+            # if lastOpenRoute is not None:
+            self.identifyBest_NN_ofLastVisited(bestInsertion, shortestroute, itr)
 
             if (bestInsertion.serviceLocation is not None):
                 self.applyLocationInsertion(bestInsertion)
+                self.try_to_put_in_route=[False for r in range(self.total_vehicles)]
                 insertions += 1
             else:
                 # If there is an empty available route
                 # kai na elegxei an ksepername to total_vehicles
-                if lastOpenRoute is not None and len(lastOpenRoute.sequenceOfNodes) == 1:
+                if shortestroute is not None and len(shortestroute.sequenceOfNodes) == 1:
                     modelIsFeasible = False
                     break
-                else:
-                    if self.total_vehicles > len(self.sol.routes):
-                        rt = Route(self.depot, self.capacity)
-                        self.sol.routes.append(rt)
-                    else:
-                        modelIsFeasible = False
-
         if (modelIsFeasible == False):
             print('FeasibilityIssue')
             # reportSolution
 
+    def openAllPaths(self):
+        for i in range(self.total_vehicles):
+            rt = Route(self.depot, self.capacity)
+            self.sol.routes.append(rt)
+
+    def getShortestRoute(self):
+        # shortestroute = min(self.sol.routes, key = lambda k: k.time)
+        shortestroutetime=10**9
+        index=-1
+        for i in range(self.total_vehicles):
+            if self.try_to_put_in_route[i] == False:
+                if self.sol.routes[i].time < shortestroutetime:
+                    index = i
+                    shortestroutetime = self.sol.routes[i].time
+        self.try_to_put_in_route[index] == True
+        shortestroute = self.sol.routes[index]
+        print("shortestroute:",shortestroute.printRoute())
+        return shortestroute
 
     def minimumInsertions(self, itr=0):
         modelIsFeasible = True

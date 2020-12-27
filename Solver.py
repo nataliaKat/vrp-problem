@@ -14,6 +14,13 @@ class ServiceLocationInsertion(object):
         self.route = None
         self.time = 10 ** 9
 
+class ServiceLocationInsertionAllPositions(object):
+    def __init__(self):
+        self.serviceLocation = None
+        self.route = None
+        self.insertionPosition = None
+        self.time = 10 ** 9
+
 class Solver:
     def __init__(self, m):
         self.all_nodes = m.all_nodes
@@ -29,7 +36,8 @@ class Solver:
 
     def solve(self):
         self.setRoutedFlagToFalseForAllServiceLocations()
-        self.applyNearestNeighborMethod()
+        self.minimumInsertions()
+        #self.applyNearestNeighborMethod()
         print("Time is", self.sol.time_cost)
         for r in self.sol.routes:
             r.printRoute()
@@ -126,3 +134,87 @@ class Solver:
         if (modelIsFeasible == False):
             print('FeasibilityIssue')
             # reportSolution
+
+
+    def minimumInsertions(self, itr=0):
+        modelIsFeasible = True
+        self.sol = Solution()
+        insertions = 0
+        while (insertions < len(self.service_locations)):
+            bestInsertion = ServiceLocationInsertionAllPositions()
+            lastOpenRoute: Route = self.getLastOpenRoute()
+
+            if lastOpenRoute is not None:
+                self.identifyBestInsertionAllPositions(bestInsertion, lastOpenRoute, itr)
+
+            if (bestInsertion.serviceLocation is not None):
+                self.applyLocationInsertionAllPositions(bestInsertion)
+                insertions += 1
+            else:
+                # If there is an empty available route
+                # kai na elegxei an ksepername to total_vehicles
+                if lastOpenRoute is not None and len(lastOpenRoute.sequenceOfNodes) == 1:
+                    modelIsFeasible = False
+                    break
+                else:
+                    if self.total_vehicles > len(self.sol.routes):
+                        rt = Route(self.depot, self.capacity)
+                        self.sol.routes.append(rt)
+                    else:
+                        modelIsFeasible = False
+
+        if (modelIsFeasible == False):
+            print('FeasibilityIssue')
+            # reportSolution
+
+
+    def identifyBestInsertionAllPositions(self, bestInsertion, rt, itr = 0):
+        random.seed(itr)
+        rcl = []
+        for i in range(0, len(self.service_locations)):
+            candidateServLoc: Node = self.service_locations[i]
+            if candidateServLoc.isRouted is False:
+                if rt.load + candidateServLoc.demand <= rt.capacity:
+                    if len(rt.sequenceOfNodes)==1:
+                        trialTime=self.time_matrix[0][candidateServLoc.id]
+                        bestInsertion.time = trialTime
+                        bestInsertion.serviceLocation = candidateServLoc
+                        bestInsertion.route = rt
+                        bestInsertion.insertionPosition = 1
+                        return
+                    for j in range(0, len(rt.sequenceOfNodes)-1):
+                        A = rt.sequenceOfNodes[j]
+                        B = rt.sequenceOfNodes[j + 1]
+                        timeAdded = self.time_matrix[A.id][candidateServLoc.id] + self.time_matrix[candidateServLoc.id][B.id]
+                        timeRemoved = self.time_matrix[A.id][B.id]
+                        trialTime = timeAdded - timeRemoved
+
+                        if len(rcl) < self.rcl_size:
+                            new_tup = (trialTime, candidateServLoc, rt, j)
+                            rcl.append(new_tup)
+                            rcl.sort(key=lambda x: x[0])
+                        elif trialTime < rcl[-1][0]:
+                            rcl.pop(len(rcl) - 1)
+                            new_tup = (trialTime, candidateServLoc, rt, j)
+                            rcl.append(new_tup)
+                            rcl.sort(key=lambda x: x[0])
+        if len(rcl) > 0:
+            tup_index = random.randint(0, len(rcl)-1)
+            tpl = rcl[tup_index]
+            bestInsertion.time = tpl[0]
+            bestInsertion.serviceLocation = tpl[1]
+            bestInsertion.route = tpl[2]
+            bestInsertion.insertionPosition = tpl[3]
+
+    def applyLocationInsertionAllPositions(self, insertion):
+        insLocation = insertion.serviceLocation
+        rt = insertion.route
+        # before the second depot occurrence
+        insIndex = insertion.insertionPosition
+        rt.sequenceOfNodes.insert(insIndex + 1, insLocation)
+        rt.time += insertion.time
+        routes_sorted = self.sol.routes[:]
+        routes_sorted.sort(key=lambda x: x.time)
+        self.sol.time_cost = routes_sorted[-1].time
+        rt.load += insLocation.demand
+        insLocation.isRouted = True

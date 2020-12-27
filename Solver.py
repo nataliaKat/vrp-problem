@@ -28,12 +28,13 @@ class Solver:
         self.rcl_size = 1 #isws gia arxh na to kaname 1
 
     def solve(self):
-        self.setRoutedFlagToFalseForAllServiceLocations()
-        self.applyNearestNeighborMethod()
-        print("Time is", self.sol.time_cost)
-        for r in self.sol.routes:
-            r.printRoute()
-        SolDrawer.draw(1, self.sol, self.all_nodes)
+        # self.setRoutedFlagToFalseForAllServiceLocations()
+        # self.applyNearestNeighborMethod()
+        # print("Time is", self.sol.time_cost)
+        # for r in self.sol.routes:
+        #     r.printRoute()
+        # SolDrawer.draw(1, self.sol, self.all_nodes)
+        self.testSolution("sol.txt")
 
     def setRoutedFlagToFalseForAllServiceLocations(self):
         for i in range(0, len(self.service_locations)):
@@ -126,3 +127,38 @@ class Solver:
         if (modelIsFeasible == False):
             print('FeasibilityIssue')
             # reportSolution
+
+    def testSolution(self, filename):
+        f = open(filename)
+        lines = f.read().splitlines()
+        f.close()
+        file_obj = -1
+        file_sol = Solution()
+        depot = Node(0, 0, 0, 50, 50)
+        for i in range(len(lines)):
+            if i == 0:
+                file_sol.time_cost = float(lines[i])
+            else:
+                rt = Route(depot, 3000)
+                file_sol.routes.append(rt)
+                ids = lines[i].split(",")
+                for i in range(len(ids)):
+                    if i != 0:#gia na min valei tin apothiki
+                        id = int(ids[i])
+                        rt.sequenceOfNodes.append(self.all_nodes[id])
+                rt.printRoute()
+        for route in file_sol.routes:
+            route.time = 0
+            for i in range(len(route.sequenceOfNodes) - 1):
+                current = route.sequenceOfNodes[i]
+                print("current", current.id)
+                next = route.sequenceOfNodes[i + 1]
+                print("next", next.id)
+                route.time += self.time_matrix[current.id][next.id]
+
+        routes_sorted = file_sol.routes[:]
+        routes_sorted.sort(key=lambda x: x.time)
+        print("---------")
+        print(routes_sorted)
+        file_sol.time_cost = routes_sorted[-1].time
+        print("Time is", file_sol.time_cost)

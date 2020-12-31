@@ -37,8 +37,8 @@ class Solver:
 
     def solve(self):
         self.setRoutedFlagToFalseForAllServiceLocations()
-        #self.minimumInsertions()
-        self.applyNearestNeighborMethod()
+        self.minimumInsertions()
+        #self.applyNearestNeighborMethod()
         print("Time is", self.sol.time_cost)
         for r in self.sol.routes:
             r.printRoute()
@@ -145,7 +145,7 @@ class Solver:
                 if self.sol.routes[i].time < shortestroutetime:
                     index = i
                     shortestroutetime = self.sol.routes[i].time
-        self.try_to_put_in_route[index] == True
+        self.try_to_put_in_route[index] = True
         shortestroute = self.sol.routes[index]
         print("shortestroute:",shortestroute.printRoute())
         return shortestroute
@@ -154,15 +154,17 @@ class Solver:
         modelIsFeasible = True
         self.sol = Solution()
         insertions = 0
+        self.openAllPaths()
         while (insertions < len(self.service_locations)):
             bestInsertion = ServiceLocationInsertionAllPositions()
-            lastOpenRoute: Route = self.getLastOpenRoute()
+            lastOpenRoute: Route = self.getShortestRoute()
 
             if lastOpenRoute is not None:
                 self.identifyBestInsertionAllPositions(bestInsertion, lastOpenRoute, itr)
 
             if (bestInsertion.serviceLocation is not None):
                 self.applyLocationInsertionAllPositions(bestInsertion)
+                self.try_to_put_in_route=[False for r in range(self.total_vehicles)]
                 insertions += 1
             else:
                 # If there is an empty available route

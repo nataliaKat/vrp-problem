@@ -39,11 +39,11 @@ class Model:
                 dy_2 = (source.y - target.y) ** 2
                 dist = round(math.sqrt(dx_2 + dy_2))
                 time = dist / 35
-                if source.type == 1:
+                if target.type == 1:
                     time += 1 / 12
-                elif source.type == 2:
+                elif target.type == 2:
                     time += 1 / 4
-                elif source.type == 3:
+                elif target.type == 3:
                     time += 5 / 12
                 self.time_matrix[i][j] = time
 

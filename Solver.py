@@ -104,13 +104,13 @@ class Solver:
     def solve(self):
         self.setRoutedFlagToFalseForAllServiceLocations()
         self.minimumInsertions()
-        #self.applyNearestNeighborMethod()
+        # self.applyNearestNeighborMethod()
         cc = self.sol.time_cost
         print("Time is", self.sol.time_cost)
         for r in self.sol.routes:
             r.printRoute()
         SolDrawer.draw('minimuminsertions', self.sol, self.all_nodes)
-        # self.ReportSolution(self.sol)
+        self.ReportSolution(self.sol)
         self.LocalSearch(0)
         if self.overallBestSol == None or self.overallBestSol.cost > self.sol.time_cost:
             self.overallBestSol = self.cloneSolution(self.sol)
@@ -288,26 +288,26 @@ class Solver:
 
     def TestSolution(self):
         totalSolCost = 0
+        routes = []
         for r in range (0, len(self.sol.routes)):
             rt: Route = self.sol.routes[r]
             rtCost = 0
             rtLoad = 0
-            for n in range (0 , len(rt.sequenceOfNodes) - 1):
+            for n in range(0, len(rt.sequenceOfNodes) - 1):
                 A = rt.sequenceOfNodes[n]
                 B = rt.sequenceOfNodes[n + 1]
                 rtCost += self.time_matrix[A.id][B.id]
-                rtLoad += A.demand
+                rtLoad += B.demand
             if abs(rtCost - rt.time) > 0.0001:
-                print ('Route Cost problem')
+                print ('Route Cost problem', "ypol", rtCost,"apoth", rt.time)
             if rtLoad != rt.load:
                 print ('Route Load problem','L', rtLoad,'l', rt.load)
-            routes = []
             routes.append(rt)
         routes.sort(key=lambda x: x.time)
         totalSolCost = routes[-1].time
 
         if abs(totalSolCost - self.sol.time_cost) > 0.0001:
-            print('Solution Cost problem')
+            print('Solution Cost problem', "testcost", totalSolCost, "cost", self.sol.time_cost)
 
     def setRoutedFlagToFalseForAllServiceLocations(self):
         for i in range(0, len(self.service_locations)):
@@ -423,7 +423,6 @@ class Solver:
         while (insertions < len(self.service_locations)):
             bestInsertion = ServiceLocationInsertionAllPositions()
             lastOpenRoute: Route = self.getShortestRoute()
-
             if lastOpenRoute is not None:
                 self.identifyBestInsertionAllPositions(bestInsertion, lastOpenRoute, itr)
 
@@ -431,24 +430,27 @@ class Solver:
                 self.applyLocationInsertionAllPositions(bestInsertion)
                 self.try_to_put_in_route=[False for r in range(self.total_vehicles)]
                 insertions += 1
-            else:
+            # else:
                 # If there is an empty available route
                 # kai na elegxei an ksepername to total_vehicles
-                if lastOpenRoute is not None and len(lastOpenRoute.sequenceOfNodes) == 1:
-                    modelIsFeasible = False
-                    break
-                else:
+                # if lastOpenRoute is not None and len(lastOpenRoute.sequenceOfNodes) == 1:
+                #     print("hi1")
+                #     modelIsFeasible = False
+                #     break
+                # else:
                     # If there is an empty available route
                     # kai na elegxei an ksepername to total_vehicles
-                    if lastOpenRoute is not None and len(lastOpenRoute.sequenceOfNodes) == 1:
-                        modelIsFeasible = False
-                        break
-                    else:
-                        if self.total_vehicles > len(self.sol.routes):
-                            rt = Route(self.depot, self.capacity)
-                            self.sol.routes.append(rt)
-                        else:
-                            modelIsFeasible = False
+                    # if lastOpenRoute is not None and len(lastOpenRoute.sequenceOfNodes) == 1:
+                    #     modelIsFeasible = False
+                    #     print("hi2")
+                    #     break
+                    # else:
+                    #     if self.total_vehicles > len(self.sol.routes):
+                    #         rt = Route(self.depot, self.capacity)
+                    #         self.sol.routes.append(rt)
+                    #     else:
+                    #         print("hi3")
+                    #         modelIsFeasible = False
 
             if (modelIsFeasible == False):
                 print('FeasibilityIssue')

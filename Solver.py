@@ -98,24 +98,25 @@ class Solver:
         self.sol = None
         self.bestSolution = None
         self.overallBestSol = None
-        self.rcl_size = 1 #isws gia arxh na to kaname 1
+        self.rcl_size = 3 #isws gia arxh na to kaname 1
         self.try_to_put_in_route=[False for r in range(self.total_vehicles)]
 
     def solve(self):
-        self.setRoutedFlagToFalseForAllServiceLocations()
-        self.minimumInsertions()
-        # self.applyNearestNeighborMethod()
-        cc = self.sol.time_cost
-        for r in self.sol.routes:
-            r.printRoute()
-        print("Time is", self.sol.time_cost)
-        SolDrawer.draw('minimuminsertions', self.sol, self.all_nodes)
-        # self.ReportSolution(self.sol)
-        self.LocalSearch(0)
-        if self.overallBestSol == None or self.overallBestSol.cost > self.sol.time_cost:
-            self.overallBestSol = self.cloneSolution(self.sol)
-        print('Cost: ', cc, ' LS:', self.sol.time_cost, 'BestOverall: ', self.overallBestSol.time_cost)
-        SolDrawer.draw('localsearch', self.sol, self.all_nodes)
+        for i in range(5):
+            self.setRoutedFlagToFalseForAllServiceLocations()
+            self.minimumInsertions(i)
+            # self.applyNearestNeighborMethod()
+            cc = self.sol.time_cost
+            # for r in self.sol.routes:
+            #     r.printRoute()
+            print("Time is", self.sol.time_cost)
+            # SolDrawer.draw('minimuminsertions', self.sol, self.all_nodes)
+            # self.ReportSolution(self.sol)
+            self.LocalSearch(0)
+            if self.overallBestSol == None or self.overallBestSol.time_cost > self.sol.time_cost:
+                self.overallBestSol = self.cloneSolution(self.sol)
+            print('Cost: ', cc, ' LS:', self.sol.time_cost, 'BestOverall: ', self.overallBestSol.time_cost)
+            # SolDrawer.draw('localsearch', self.sol, self.all_nodes)
 
     def LocalSearch(self, operator):
         self.bestSolution = self.cloneSolution(self.sol)
@@ -223,7 +224,7 @@ class Solver:
                         # moveCost = costAdded - costRemoved
 
                         if (oldcost > newcost):
-                            print('oc', oldcost, 'nc', newcost)
+                            # print('oc', oldcost, 'nc', newcost)
                             oldcost = newcost
                             # print("newsol routes")
                             # for r in newsol.routes:
@@ -245,7 +246,7 @@ class Solver:
 
         B = originRt.sequenceOfNodes[rm.originNodePosition]
         if originRt == targetRt:
-            print("same rt")
+            # print("same rt")
             A = originRt.sequenceOfNodes[rm.originNodePosition - 1]
             B = originRt.sequenceOfNodes[rm.originNodePosition]
             C = originRt.sequenceOfNodes[rm.originNodePosition + 1]
@@ -259,7 +260,7 @@ class Solver:
 
             originRt.time = originRt.time + self.time_matrix[A.id][C.id] - self.time_matrix[A.id][B.id] - self.time_matrix[B.id][C.id] +self.time_matrix[F.id][B.id] + self.time_matrix[B.id][G.id] - self.time_matrix[F.id][G.id]
         else:
-            print("different rt")
+            # print("different rt")
             del originRt.sequenceOfNodes[rm.originNodePosition]
             targetRt.sequenceOfNodes.insert(rm.targetNodePosition + 1, B)
             originRt.time += rm.costChangeOriginRt
@@ -433,7 +434,7 @@ class Solver:
                     shortestroutetime = self.sol.routes[i].time
         self.try_to_put_in_route[index] = True
         shortestroute = self.sol.routes[index]
-        print("shortestroute:",shortestroute.printRoute())
+        # print("shortestroute:",shortestroute.printRoute())
         return shortestroute
 
     def minimumInsertions(self, itr=0):

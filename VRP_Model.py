@@ -60,16 +60,17 @@ class Node:
         self.isRouted = False
 
 class Route:
-    def __init__(self, dp, cap):
+    def __init__(self, dp, cap, id):
         self.sequenceOfNodes = []
         self.sequenceOfNodes.append(dp)
+        self.id = id
         # self.sequenceOfNodes.append(dp)
         self.time = 0
         self.capacity = cap
         self.load = 0
 
     def printRoute(self):
-        nodes_string = ""
+        nodes_string = "Route with id: " + str(self.id)
         for node in self.sequenceOfNodes:
             nodes_string += str(node.id) + ", "
         print(nodes_string)

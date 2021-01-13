@@ -69,6 +69,4 @@ class Route:
         nodes_string = ""
         for node in self.sequenceOfNodes:
             nodes_string += str(node.id) + ", "
-        print(nodes_string)
-
-
+        print(nodes_string, self.time)

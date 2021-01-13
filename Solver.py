@@ -106,11 +106,11 @@ class Solver:
         self.minimumInsertions()
         # self.applyNearestNeighborMethod()
         cc = self.sol.time_cost
-        print("Time is", self.sol.time_cost)
         for r in self.sol.routes:
             r.printRoute()
+        print("Time is", self.sol.time_cost)
         SolDrawer.draw('minimuminsertions', self.sol, self.all_nodes)
-        self.ReportSolution(self.sol)
+        # self.ReportSolution(self.sol)
         self.LocalSearch(0)
         if self.overallBestSol == None or self.overallBestSol.cost > self.sol.time_cost:
             self.overallBestSol = self.cloneSolution(self.sol)
@@ -157,6 +157,7 @@ class Solver:
 
             self.TestSolution()
 
+
             if (self.sol.time_cost < self.bestSolution.time_cost):
                 self.bestSolution = self.cloneSolution(self.sol)
 
@@ -181,6 +182,7 @@ class Solver:
         return cloned
 
     def FindBestRelocationMove(self, rm):
+        oldcost = self.CalculateTotalCost(self.sol)
         for originRouteIndex in range(0, len(self.sol.routes)):
             rt1:Route = self.sol.routes[originRouteIndex]
             for targetRouteIndex in range (0, len(self.sol.routes)):
@@ -216,17 +218,23 @@ class Solver:
                         # print('oldtarget', self.sol.routes[targetRouteIndex].time, 'newtarget', newsol.routes[targetRouteIndex].time, newsol.routes[targetRouteIndex].time , 'tchange',targetRtCostChange  )
 
 
-                        oldcost = self.CalculateTotalCost(self.sol)
                         newcost = self.CalculateTotalCost(newsol)
                         #λαθος σκεψη για εμας πρεπει να το κανουμε καπως αλλιως γιατι εμεις δεν υπολογιζουμε ετσι τον μιν του μαξ χρονο
                         # moveCost = costAdded - costRemoved
-                        # print('oc', oldcost, 'nc', newcost)
+
                         if (oldcost > newcost):
-                            for r in self.sol.routes:
-                                r.printRoute()
-                            print('newcost', newcost)
-                            print('route change',rt2.printRoute())
+                            print('oc', oldcost, 'nc', newcost)
+                            oldcost = newcost
+                            # print("newsol routes")
+                            # for r in newsol.routes:
+                            #     r.printRoute()
+                            # print("oldsol routes")
+                            # for r in self.sol.routes:
+                            #     r.printRoute()
+                            # print('newcost', newcost, originRouteIndex, targetRouteIndex, originNodeIndex, targetNodeIndex, originRtCostChange, targetRtCostChange, rm)
+                            # print('route change',rt2.printRoute())
                             self.StoreBestRelocationMove(originRouteIndex, targetRouteIndex, originNodeIndex, targetNodeIndex, originRtCostChange, targetRtCostChange, rm)
+
 
     def ApplyRelocationMove(self, rm: RelocationMove):
 
@@ -236,17 +244,22 @@ class Solver:
         targetRt = self.sol.routes[rm.targetRoutePosition]
 
         B = originRt.sequenceOfNodes[rm.originNodePosition]
-
         if originRt == targetRt:
+            print("same rt")
+            A = originRt.sequenceOfNodes[rm.originNodePosition - 1]
+            B = originRt.sequenceOfNodes[rm.originNodePosition]
+            C = originRt.sequenceOfNodes[rm.originNodePosition + 1]
+            F = targetRt.sequenceOfNodes[rm.targetNodePosition]
+            G = targetRt.sequenceOfNodes[rm.targetNodePosition + 1]
             del originRt.sequenceOfNodes[rm.originNodePosition]
             if (rm.originNodePosition < rm.targetNodePosition):
                 targetRt.sequenceOfNodes.insert(rm.targetNodePosition, B)
             else:
                 targetRt.sequenceOfNodes.insert(rm.targetNodePosition + 1, B)
 
-            # originRt.time += rm.moveCost
+            originRt.time = originRt.time + self.time_matrix[A.id][C.id] - self.time_matrix[A.id][B.id] - self.time_matrix[B.id][C.id] +self.time_matrix[F.id][B.id] + self.time_matrix[B.id][G.id] - self.time_matrix[F.id][G.id]
         else:
-            print('hello')
+            print("different rt")
             del originRt.sequenceOfNodes[rm.originNodePosition]
             targetRt.sequenceOfNodes.insert(rm.targetNodePosition + 1, B)
             originRt.time += rm.costChangeOriginRt
@@ -257,7 +270,7 @@ class Solver:
         #
         # self.sol.time_cost += rm.moveCost
 
-        newCost = self.CalculateTotalCost(self.sol)
+        self.sol.time_cost = self.CalculateTotalCost(self.sol)
         #debuggingOnly
         # 'mc', rm.moveCost
         # print('n', newCost, 'o', oldCost)
@@ -285,6 +298,14 @@ class Solver:
         routes_sorted.sort(key=lambda x: x.time)
         c = routes_sorted[-1].time
         return c
+
+    def ReportSolution(self, sol):
+        for i in range(0, len(sol.routes)):
+            rt = sol.routes[i]
+            for j in range (0, len(rt.sequenceOfNodes)):
+                print(rt.sequenceOfNodes[j].id, end=' ')
+            print(rt.time)
+        print (self.sol.time_cost)
 
     def TestSolution(self):
         totalSolCost = 0

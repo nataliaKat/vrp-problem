@@ -39,16 +39,13 @@ class Model:
                 dy_2 = (source.y - target.y) ** 2
                 dist = round(math.sqrt(dx_2 + dy_2))
                 time = dist / 35
-                if source.type == 0:
-                    continue
-                elif source.type == 1:
+                if target.type == 1:
                     time += 1 / 12
-                elif source.type == 2:
+                elif target.type == 2:
                     time += 1 / 4
-                else:
+                elif target.type == 3:
                     time += 5 / 12
                 self.time_matrix[i][j] = time
-
 
 class Node:
     def __init__(self, id, tp, dem, xx, yy):
@@ -60,19 +57,16 @@ class Node:
         self.isRouted = False
 
 class Route:
-    def __init__(self, dp, cap, id):
+    def __init__(self, dp, cap):
         self.sequenceOfNodes = []
         self.sequenceOfNodes.append(dp)
-        self.id = id
         # self.sequenceOfNodes.append(dp)
         self.time = 0
         self.capacity = cap
         self.load = 0
 
     def printRoute(self):
-        nodes_string = "Route with id: " + str(self.id)
+        nodes_string = ""
         for node in self.sequenceOfNodes:
             nodes_string += str(node.id) + ", "
-        print(nodes_string)
-
-
+        print(nodes_string, self.time)

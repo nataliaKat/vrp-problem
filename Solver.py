@@ -182,7 +182,7 @@ class Solver:
         return cloned
 
     def FindBestRelocationMove(self, rm):
-        oldcost = self.CalculateTotalCost(self.sol)
+        oldcost,oldtimes = self.CalculateTotalCost(self.sol)
         for originRouteIndex in range(0, len(self.sol.routes)):
             rt1:Route = self.sol.routes[originRouteIndex]
             for targetRouteIndex in range (0, len(self.sol.routes)):
@@ -218,13 +218,14 @@ class Solver:
                         # print('oldtarget', self.sol.routes[targetRouteIndex].time, 'newtarget', newsol.routes[targetRouteIndex].time, newsol.routes[targetRouteIndex].time , 'tchange',targetRtCostChange  )
 
 
-                        newcost = self.CalculateTotalCost(newsol)
+                        newcost,times = self.CalculateTotalCost(newsol)
                         #λαθος σκεψη για εμας πρεπει να το κανουμε καπως αλλιως γιατι εμεις δεν υπολογιζουμε ετσι τον μιν του μαξ χρονο
                         # moveCost = costAdded - costRemoved
 
-                        if (oldcost > newcost):
+                        if (oldcost > newcost or (oldcost == newcost and times < oldtimes)):
                             print('oc', oldcost, 'nc', newcost)
                             oldcost = newcost
+                            oldtimes = times
                             # print("newsol routes")
                             # for r in newsol.routes:
                             #     r.printRoute()
@@ -270,7 +271,7 @@ class Solver:
         #
         # self.sol.time_cost += rm.moveCost
 
-        self.sol.time_cost = self.CalculateTotalCost(self.sol)
+        self.sol.time_cost, caltim = self.CalculateTotalCost(self.sol)
         #debuggingOnly
         # 'mc', rm.moveCost
         # print('n', newCost, 'o', oldCost)
@@ -297,7 +298,11 @@ class Solver:
         routes_sorted = sol.routes[:]
         routes_sorted.sort(key=lambda x: x.time)
         c = routes_sorted[-1].time
-        return c
+        j = 0
+        for i in routes_sorted:
+            if c == i.time:
+                j = j + 1
+        return c , j
 
     def ReportSolution(self, sol):
         for i in range(0, len(sol.routes)):

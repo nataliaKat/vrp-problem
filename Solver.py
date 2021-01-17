@@ -348,14 +348,19 @@ class Solver:
                                 n = rt1.sequenceOfNodes[i]
                                 n1 = rt1.sequenceOfNodes[i + 1]
                                 time_cost += self.time_matrix[n.id][n1.id]
-                            time_cost += self.time_matrix[A.id][K.id] + self.time_matrix[K.id][(rt2.sequenceOfNodes[nodeInd2 - 1]).id]
+                            if ( nodeInd2 ==  nodeInd1 + 2):
+                                time_cost += self.time_matrix[A.id][K.id] + self.time_matrix[K.id][B.id]
+                            else:
+                                time_cost += self.time_matrix[A.id][K.id] + self.time_matrix[K.id][(rt2.sequenceOfNodes[nodeInd2 - 1]).id]
 
                             for i in range(nodeInd2 -1, nodeInd1 + 2, -1):
                                 n = rt1.sequenceOfNodes[i]
                                 n1 = rt1.sequenceOfNodes[i - 1]
                                 time_cost += self.time_matrix[n.id][n1.id]
-
-                            time_cost += self.time_matrix[B.id][L.id] + self.time_matrix[rt2.sequenceOfNodes[nodeInd1 + 2].id][B.id]
+                            if (nodeInd2 == nodeInd1 + 2):
+                                time_cost += self.time_matrix[B.id][L.id]
+                            else:
+                                time_cost += self.time_matrix[B.id][L.id] + self.time_matrix[rt2.sequenceOfNodes[nodeInd1 + 2].id][B.id]
                             for i in range(nodeInd2 + 1, len(rt1.sequenceOfNodes) -1):
                                 n = rt1.sequenceOfNodes[i]
                                 n1 = rt1.sequenceOfNodes[i + 1]

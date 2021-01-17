@@ -455,6 +455,7 @@ class Solver:
             # rt1.sequenceOfNodes[top.positionOfFirstNode + 1: top.positionOfSecondNode + 1] = reversedSegmentList
             rt1.cost = top.costchange1
             # rt1.cost += top.moveCost
+            print("same route")
 
         else:
             # slice with the nodes from position top.positionOfFirstNode + 1 onwards
@@ -471,7 +472,8 @@ class Solver:
 
             self.UpdateRouteCostAndLoad(rt1)
             self.UpdateRouteCostAndLoad(rt2)
-
+            print("diff route")
+        self.sol.time_cost, caltim = self.CalculateTotalCost(self.sol)
         # self.sol.cost += top.moveCost
 
     def UpdateRouteCostAndLoad(self, rt: Route):
@@ -483,7 +485,7 @@ class Solver:
             tc += self.time_matrix[A.id][B.id]
             tl += B.demand
         rt.load = tl
-        rt.cost = tc
+        rt.time = tc
 
     def TestSolution(self):
         totalSolCost = 0

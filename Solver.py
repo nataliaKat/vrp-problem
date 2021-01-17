@@ -102,17 +102,25 @@ class Solver:
         self.sol = None
         self.bestSolution = None
         self.overallBestSol = None
-        self.rcl_size = 3 #isws gia arxh na to kaname 1
+        self.rcl_size = 5 #isws gia arxh na to kaname 1
         self.try_to_put_in_route=[False for r in range(self.total_vehicles)]
 
     def solve(self):
-        for i in range(6):
+        solutions = set()
+        for i in range(50):
             self.setRoutedFlagToFalseForAllServiceLocations()
-            # self.minimumInsertions(i*20)
-            self.applyNearestNeighborMethod(i*20)
+            self.minimumInsertions(i*20)
+            # self.applyNearestNeighborMethod(i * 20)
             cc = self.sol.time_cost
-            # for r in self.sol.routes:
-            #     r.printRoute()
+            if cc in solutions:
+                continue
+            solutions.add(cc)
+            # self.setRoutedFlagToFalseForAllServiceLocations()
+            # self.minimumInsertions(i*20)
+            # # self.applyNearestNeighborMethod(i*20)
+            # cc = self.sol.time_cost
+            # # for r in self.sol.routes:
+            # #     r.printRoute()
             print("Time is", self.sol.time_cost)
             # SolDrawer.draw('minimuminsertions', self.sol, self.all_nodes)
             # self.ReportSolution(self.sol)
@@ -144,6 +152,7 @@ class Solver:
                     self.ApplyRelocationMove(rm)
                 else:
                     terminationCondition = True
+                    # operator = 2
             # Swaps
             elif operator == 1:
                 self.FindBestSwapMove(sm)
@@ -158,7 +167,8 @@ class Solver:
                     # if top.moveCost < 0:
                     self.ApplyTwoOptMove(top)
                 else:
-                    terminationCondition = True
+                    # terminationCondition = True
+                    operator = 0
 
             self.TestSolution()
 

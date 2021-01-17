@@ -453,9 +453,9 @@ class Solver:
 
             # reversedSegmentList = list(reversed(rt1.sequenceOfNodes[top.positionOfFirstNode + 1: top.positionOfSecondNode + 1]))
             # rt1.sequenceOfNodes[top.positionOfFirstNode + 1: top.positionOfSecondNode + 1] = reversedSegmentList
-            rt1.cost = top.costchange1
+            rt1.time = top.costchange1
             # rt1.cost += top.moveCost
-            print("same route")
+            # print("same route")
 
         else:
             # slice with the nodes from position top.positionOfFirstNode + 1 onwards
@@ -472,7 +472,7 @@ class Solver:
 
             self.UpdateRouteCostAndLoad(rt1)
             self.UpdateRouteCostAndLoad(rt2)
-            print("diff route")
+            # print("diff route")
         self.sol.time_cost, caltim = self.CalculateTotalCost(self.sol)
         # self.sol.cost += top.moveCost
 

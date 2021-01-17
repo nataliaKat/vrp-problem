@@ -362,8 +362,8 @@ class Solver:
                                 time_cost += self.time_matrix[n.id][n1.id]
 
                             newsol = self.cloneSolution(self.sol)
-                            newsol.routes[rtInd1].time = newsol.routes[rtInd1].time + time_cost
-                            cost1 = newsol.routes[rtInd1].time
+                            newsol.routes[rtInd1].time = time_cost
+                            cost1 = time_cost
                             cost2 = 0
                         else:
                             if nodeInd1 == 0 and nodeInd2 == 0:

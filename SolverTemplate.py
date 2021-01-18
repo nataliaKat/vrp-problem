@@ -217,6 +217,57 @@ class Solver:
 
         self.sol = self.bestSolution
 
+    def VND(self):
+        self.bestSolution = self.cloneSolution(self.sol)
+        VNDIterator = 0
+        kmax = 2
+        rm = RelocationMove()
+        sm = SwapMove()
+        top = TwoOptMove()
+        k = 0
+        draw = True
+
+        while k <= kmax:
+            self.InitializeOperators(rm, sm, top)
+            if k == 1:
+                self.FindBestRelocationMove(rm)
+                if rm.originRoutePosition is not None and rm.moveCost < 0:
+                    self.ApplyRelocationMove(rm)
+                    if draw:
+                        SolDrawer.draw(VNDIterator, self.sol, self.allNodes)
+                    VNDIterator = VNDIterator + 1
+                    self.searchTrajectory.append(self.sol.cost)
+                    k = 0
+                else:
+                    k += 1
+            elif k == 2:
+                self.FindBestSwapMove(sm)
+                if sm.positionOfFirstRoute is not None and sm.moveCost < 0:
+                    self.ApplySwapMove(sm)
+                    if draw:
+                        SolDrawer.draw(VNDIterator, self.sol, self.allNodes)
+                    VNDIterator = VNDIterator + 1
+                    self.searchTrajectory.append(self.sol.cost)
+                    k = 0
+                else:
+                    k += 1
+            elif k == 0:
+                self.FindBestTwoOptMove(top)
+                if top.positionOfFirstRoute is not None and top.moveCost < 0:
+                    self.ApplyTwoOptMove(top)
+                    if draw:
+                        SolDrawer.draw(VNDIterator, self.sol, self.allNodes)
+                    VNDIterator = VNDIterator + 1
+                    self.searchTrajectory.append(self.sol.cost)
+                    k = 0
+                else:
+                    k += 1
+
+            if (self.sol.cost < self.bestSolution.cost):
+                self.bestSolution = self.cloneSolution(self.sol)
+
+        SolDrawer.drawTrajectory(self.searchTrajectory)
+
 
     def cloneRoute(self, rt:Route):
         cloned = Route(self.depot, self.capacity)

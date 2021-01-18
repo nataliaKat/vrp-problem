@@ -55,6 +55,8 @@ class Node:
         self.x = xx
         self.y = yy
         self.isRouted = False
+        self.isTabuTillIterator = -1
+
 
 class Route:
     def __init__(self, dp, cap):

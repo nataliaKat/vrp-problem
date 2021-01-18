@@ -152,7 +152,7 @@ class Solver:
                     self.ApplyRelocationMove(rm)
                 else:
                     terminationCondition = True
-                    # operator = 2
+                    operator = 1
             # Swaps
             elif operator == 1:
                 self.FindBestSwapMove(sm)
@@ -160,6 +160,7 @@ class Solver:
                     self.ApplySwapMove(sm)
                 else:
                         terminationCondition = True
+                        operator = 2
             elif operator == 2:
                 self.FindBestTwoOptMove(top)
                 if top.positionOfFirstRoute is not None:
@@ -295,7 +296,7 @@ class Solver:
 
 
     def FindBestSwapMove(self, sm):
-        oldcost,times = self.CalculateTotalCost(self.sol)
+        oldcost, oldtimes = self.CalculateTotalCost(self.sol)
         for firstRouteIndex in range(0, len(self.sol.routes)):
             rt1:Route = self.sol.routes[firstRouteIndex]
             for secondRouteIndex in range (firstRouteIndex, len(self.sol.routes)):
@@ -322,10 +323,10 @@ class Solver:
                                 costRemoved = self.time_matrix[a1.id][b1.id] + self.time_matrix[b1.id][b2.id] + self.time_matrix[b2.id][c2.id]
                                 costAdded = self.time_matrix[a1.id][b2.id] + self.time_matrix[b2.id][b1.id] + self.time_matrix[b1.id][c2.id]
                                 costChangeFirstRoute = costAdded - costRemoved
-                                costChangeSecondRoute = costAdded - costRemoved
+                                costChangeSecondRoute = 0
                                 # moveCost = costAdded - costRemoved
                                 newsol = self.cloneSolution(self.sol)
-                                newsol.routes[firstRouteIndex].time = costAdded - costRemoved
+                                newsol.routes[firstRouteIndex].time += costAdded - costRemoved
                                 newcost,times = self.CalculateTotalCost(newsol)
                             else:
 
@@ -334,11 +335,12 @@ class Solver:
                                 costRemoved2 = self.time_matrix[a2.id][b2.id] + self.time_matrix[b2.id][c2.id]
                                 costAdded2 = self.time_matrix[a2.id][b1.id] + self.time_matrix[b1.id][c2.id]
                                 # moveCost = costAdded1 + costAdded2 - (costRemoved1 + costRemoved2)
+                                costChangeFirstRoute = costAdded1 + costAdded2 - (costRemoved1 + costRemoved2)
                                 newsol = self.cloneSolution(self.sol)
                                 # print(newsol.routes[originRouteIndex].time , 'ochange',originRtCostChange )
                                 # print(newsol.routes[targetRouteIndex].time , 'tchange',targetRtCostChange )
-                                newsol.routes[firstRouteIndex].time = costAdded1 - costRemoved1
-                                newsol.routes[secondRouteIndex].time = costAdded2 - costRemoved2
+                                newsol.routes[firstRouteIndex].time += costAdded1 - costRemoved1
+                                newsol.routes[secondRouteIndex].time += costAdded2 - costRemoved2
                                 newcost,times = self.CalculateTotalCost(newsol)
                         else:
                             if rt1.load - b1.demand + b2.demand > self.capacity:
@@ -356,13 +358,16 @@ class Solver:
                             newsol = self.cloneSolution(self.sol)
                             # print(newsol.routes[originRouteIndex].time , 'ochange',originRtCostChange )
                             # print(newsol.routes[targetRouteIndex].time , 'tchange',targetRtCostChange )
-                            newsol.routes[firstRouteIndex].time = costAdded1 - costRemoved1
-                            newsol.routes[secondRouteIndex].time = costAdded2 - costRemoved2
+                            newsol.routes[firstRouteIndex].time += costAdded1 - costRemoved1
+                            newsol.routes[secondRouteIndex].time += costAdded2 - costRemoved2
                             newcost,times = self.CalculateTotalCost(newsol)
 
                             # moveCost = costAdded1 + costAdded2 - (costRemoved1 + costRemoved2)
-                        print(newcost)
-                        if oldcost > newcost:
+                        # print(newcost)
+                        if (oldcost > newcost or (oldcost == newcost and times < oldtimes)):
+                            # print('oc', oldcost, 'nc', newcost)
+                            oldcost = newcost
+                            oldtimes = times
                             self.StoreBestSwapMove(firstRouteIndex, secondRouteIndex, firstNodeIndex, secondNodeIndex, costChangeFirstRoute, costChangeSecondRoute, sm)
 
     def ApplySwapMove(self, sm):
@@ -375,7 +380,7 @@ class Solver:
        rt2.sequenceOfNodes[sm.positionOfSecondNode] = b1
 
        if (rt1 == rt2):
-           rt1.time += sm.moveCost
+           rt1.time += sm.costChangeFirstRt
        else:
            rt1.time += sm.costChangeFirstRt
            rt2.time += sm.costChangeSecondRt
@@ -383,7 +388,7 @@ class Solver:
            rt2.load = rt2.load + b1.demand - b2.demand
 
        self.sol.time_cost,times = self.CalculateTotalCost(self.sol)
-       print(self.sol.time_cost)
+       # print(self.sol.time_cost)
        newCost = self.CalculateTotalCost(self.sol)
        # debuggingOnly
        # if abs((newCost - oldCost) - sm.moveCost) > 0.0001:

@@ -96,6 +96,7 @@ class Solver:
         self.all_nodes = m.all_nodes
         self.service_locations = m.service_locations
         self.depot = m.all_nodes[0]
+        self.no_cost_node = m.all_nodes[201]
         self.time_matrix = m.time_matrix
         self.capacity = m.capacity
         self.total_vehicles = m.total_vehicles
@@ -110,8 +111,9 @@ class Solver:
         solutions = set()
         for i in range(50):
             self.setRoutedFlagToFalseForAllServiceLocations()
-            # self.minimumInsertions(i*20)
-            self.applyNearestNeighborMethod(i * 20)
+            self.minimumInsertions(i)
+            # self.applyNearestNeighborMethod(i)
+            self.addNoCostNode()
             cc = self.sol.time_cost
             if cc in solutions:
                 continue
@@ -127,11 +129,15 @@ class Solver:
             # self.ReportSolution(self.sol)
             # self.LocalSearch(1)
             # self.VND()
-            self.VNDrandom()
+            self.VND()
             if self.overallBestSol == None or self.overallBestSol.time_cost > self.sol.time_cost:
                 self.overallBestSol = self.cloneSolution(self.sol)
             print('Cost: ', cc, ' LS:', self.sol.time_cost, 'BestOverall: ', self.overallBestSol.time_cost)
         SolDrawer.draw('localsearch', self.overallBestSol, self.all_nodes)
+
+    def addNoCostNode(self):
+        for rt in self.sol.routes:
+            rt.sequenceOfNodes.append(self.no_cost_node)
 
     def LocalSearch(self, operator):
         self.bestSolution = self.cloneSolution(self.sol)

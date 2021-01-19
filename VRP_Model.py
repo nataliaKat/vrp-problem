@@ -15,6 +15,7 @@ class Model:
         self.all_nodes = []
         self.service_locations = []
         depot = Node(0, 0, 0, 50, 50)
+        no_cost_node = Node(201, 0, 0, None, None)
         self.capacity = 3000
         self.total_vehicles = 25
         self.all_nodes.append(depot)
@@ -30,7 +31,7 @@ class Model:
             self.all_nodes.append(serv_node)
             self.service_locations.append(serv_node)
 
-        self.time_matrix = [[0.0 for j in range(0, len(self.all_nodes))] for k in range(0, len(self.all_nodes))]
+        self.time_matrix = [[0.0 for j in range(0, len(self.all_nodes) + 1)] for k in range(0, len(self.all_nodes) + 1)]
         for i in range(0, len(self.all_nodes)):
             for j in range(0, len(self.all_nodes)):
                 source = self.all_nodes[i]
@@ -46,6 +47,7 @@ class Model:
                 elif target.type == 3:
                     time += 5 / 12
                 self.time_matrix[i][j] = time
+        self.all_nodes.append(no_cost_node)
 
 class Node:
     def __init__(self, id, tp, dem, xx, yy):
@@ -60,7 +62,7 @@ class Route:
     def __init__(self, dp, cap):
         self.sequenceOfNodes = []
         self.sequenceOfNodes.append(dp)
-        # self.sequenceOfNodes.append(dp)
+        # self.sequenceOfNodes.append(no_cost_node)
         self.time = 0
         self.capacity = cap
         self.load = 0

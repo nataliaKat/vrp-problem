@@ -103,36 +103,35 @@ class Solver:
         self.sol = None
         self.bestSolution = None
         self.overallBestSol = None
-        self.rcl_size = 5 #isws gia arxh na to kaname 1
+        self.rcl_size = 1 #isws gia arxh na to kaname 1
         self.try_to_put_in_route=[False for r in range(self.total_vehicles)]
         self.searchTrajectory = []
 
     def solve(self):
         solutions = set()
-        for i in range(50):
-            self.setRoutedFlagToFalseForAllServiceLocations()
-            self.minimumInsertions(i)
-            # self.applyNearestNeighborMethod(i)
-            self.addNoCostNode()
-            cc = self.sol.time_cost
-            if cc in solutions:
-                continue
-            solutions.add(cc)
-            # self.setRoutedFlagToFalseForAllServiceLocations()
-            # self.minimumInsertions(i*20)
-            # # self.applyNearestNeighborMethod(i*20)
-            # cc = self.sol.time_cost
-            # # for r in self.sol.routes:
-            # #     r.printRoute()
-            print("Time is", self.sol.time_cost)
-            # SolDrawer.draw('minimuminsertions', self.sol, self.all_nodes)
-            # self.ReportSolution(self.sol)
-            # self.LocalSearch(1)
-            # self.VND()
-            self.VND()
-            if self.overallBestSol == None or self.overallBestSol.time_cost > self.sol.time_cost:
-                self.overallBestSol = self.cloneSolution(self.sol)
-            print('Cost: ', cc, ' LS:', self.sol.time_cost, 'BestOverall: ', self.overallBestSol.time_cost)
+        # for i in range(50):
+        self.setRoutedFlagToFalseForAllServiceLocations()
+        self.minimumInsertions()
+        # self.applyNearestNeighborMethod(i)
+        self.addNoCostNode()
+        cc = self.sol.time_cost
+        # if cc in solutions:
+        #     continue
+        solutions.add(cc)
+        # self.setRoutedFlagToFalseForAllServiceLocations()
+        # self.minimumInsertions(i*20)
+        # # self.applyNearestNeighborMethod(i*20)
+        # cc = self.sol.time_cost
+        # # for r in self.sol.routes:
+        # #     r.printRoute()
+        print("Time is", self.sol.time_cost)
+        # SolDrawer.draw('minimuminsertions', self.sol, self.all_nodes)
+        # self.ReportSolution(self.sol)
+        # self.LocalSearch(1)
+        self.VND()
+        if self.overallBestSol == None or self.overallBestSol.time_cost > self.sol.time_cost:
+            self.overallBestSol = self.cloneSolution(self.sol)
+        print('Cost: ', cc, ' LS:', self.sol.time_cost, 'BestOverall: ', self.overallBestSol.time_cost)
         SolDrawer.draw('localsearch', self.overallBestSol, self.all_nodes)
 
     def addNoCostNode(self):
@@ -209,6 +208,7 @@ class Solver:
                     #     SolDrawer.draw(VNDIterator, self.sol, self.all_nodes)
                     VNDIterator = VNDIterator + 1
                     self.searchTrajectory.append(self.sol.time_cost)
+                    print(self.sol.time_cost)
                     k = 0
                 else:
                     k += 1
@@ -220,6 +220,7 @@ class Solver:
                         # SolDrawer.draw(VNDIterator, self.sol, self.all_nodes)
                     VNDIterator = VNDIterator + 1
                     self.searchTrajectory.append(self.sol.time_cost)
+                    print(self.sol.time_cost)
                     k = 0
                 else:
                     k += 1
@@ -231,6 +232,7 @@ class Solver:
                     #     SolDrawer.draw(VNDIterator, self.sol, self.all_nodes)
                     VNDIterator = VNDIterator + 1
                     self.searchTrajectory.append(self.sol.time_cost)
+                    print(self.sol.time_cost)
                     k = 0
                 else:
                     k += 1
@@ -238,64 +240,9 @@ class Solver:
             if (self.sol.time_cost < self.bestSolution.time_cost):
                 self.bestSolution = self.cloneSolution(self.sol)
 
-        # SolDrawer.drawTrajectory(self.searchTrajectory)
 
 
-    def VNDrandom(self):
-        self.bestSolution = self.cloneSolution(self.sol)
-        VNDIterator = 0
-        kmax = 2
-        rm = RelocationMove()
-        sm = SwapMove()
-        top = TwoOptMove()
-        random.seed(1)
-        k = 1
-        draw = True
-        done=0
 
-        while done<3:
-            self.InitializeOperators(rm, sm, top)
-            if k == 1:
-                self.FindBestRelocationMove(rm)
-                if rm.originRoutePosition is not None: # and rm.moveCost < 0:
-                    self.ApplyRelocationMove(rm)
-                    # if draw:
-                    #     SolDrawer.draw(VNDIterator, self.sol, self.all_nodes)
-                    VNDIterator = VNDIterator + 1
-                    self.searchTrajectory.append(self.sol.time_cost)
-                    print(self.sol.time_cost)
-                    k = random.randint(0,2)
-                else:
-                    done +=1
-            elif k == 2:
-                self.FindBestSwapMove(sm)
-                if sm.positionOfFirstRoute is not None:  #and sm.moveCost < 0:
-                    self.ApplySwapMove(sm)
-                    # if draw:
-                        # SolDrawer.draw(VNDIterator, self.sol, self.all_nodes)
-                    VNDIterator = VNDIterator + 1
-                    self.searchTrajectory.append(self.sol.time_cost)
-                    print(self.sol.time_cost)
-                    k = random.randint(0,2)
-                else:
-                    done +=1
-            elif k == 0:
-                self.FindBestTwoOptMove(top)
-                if top.positionOfFirstRoute is not None: #and top.moveCost < 0:
-                    self.ApplyTwoOptMove(top)
-                    # if draw:
-                    #     SolDrawer.draw(VNDIterator, self.sol, self.all_nodes)
-                    VNDIterator = VNDIterator + 1
-                    self.searchTrajectory.append(self.sol.time_cost)
-                    print(self.sol.time_cost)
-                    k = random.randint(0,2)
-                else:
-                    done +=1
-
-            if (self.sol.time_cost < self.bestSolution.time_cost):
-                self.bestSolution = self.cloneSolution(self.sol)
-
-        # SolDrawer.drawTrajectory(self.searchTrajectory)
 
     def cloneRoute(self, rt:Route):
         cloned = Route(self.depot, self.capacity)

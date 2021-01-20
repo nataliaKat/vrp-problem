@@ -76,7 +76,7 @@ class Route:
     def returnRoute(self):
         nodes_string = ""
         for node in self.sequenceOfNodes:
-            nodes_string += str(node.id) + ", "
-        nodes_string = nodes_string[:-2]
-        nodes_string = nodes_string.replace(", 201", "")
+            nodes_string += str(node.id) + ","
+        nodes_string = nodes_string[:-1]
+        nodes_string = nodes_string.replace(",201", "")
         return nodes_string

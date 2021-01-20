@@ -115,9 +115,9 @@ class Solver:
         # self.ReportSolution(self.sol)
         # self.LocalSearch(1)
         self.VND()
-        file.write(self.sol.time_cost)
+        file.write(str(self.sol.time_cost)+"\n")
         for r in self.sol.routes:
-            file.write(r.returnRoute())
+            file.write(r.returnRoute()+"\n")
             r.printRoute()
         if self.overallBestSol == None or self.overallBestSol.time_cost > self.sol.time_cost:
             self.overallBestSol = self.cloneSolution(self.sol)
@@ -193,7 +193,6 @@ class Solver:
                     self.ApplyRelocationMove(rm)
                     VNDIterator = VNDIterator + 1
                     self.searchTrajectory.append(self.sol.time_cost)
-                    print(self.sol.time_cost)
                     k = 0
                 else:
                     k += 1
@@ -203,7 +202,6 @@ class Solver:
                     self.ApplySwapMove(sm)
                     VNDIterator = VNDIterator + 1
                     self.searchTrajectory.append(self.sol.time_cost)
-                    print(self.sol.time_cost)
                     k = 0
                 else:
                     k += 1
@@ -213,7 +211,6 @@ class Solver:
                     self.ApplyTwoOptMove(top)
                     VNDIterator = VNDIterator + 1
                     self.searchTrajectory.append(self.sol.time_cost)
-                    print(self.sol.time_cost)
                     k = 0
                 else:
                     k += 1

@@ -353,6 +353,7 @@ class Solver:
                                 costRemoved2 = self.distanceMatrix[a2.ID][b2.ID] + self.distanceMatrix[b2.ID][c2.ID]
                                 costAdded2 = self.distanceMatrix[a2.ID][b1.ID] + self.distanceMatrix[b1.ID][c2.ID]
                                 moveCost = costAdded1 + costAdded2 - (costRemoved1 + costRemoved2)
+                            #να βαλω εδω τη συνθηκη για μαξ
                         else:
                             if rt1.load - b1.demand + b2.demand > self.capacity:
                                 continue

@@ -231,19 +231,28 @@ class Solver:
                     print(rm.originRoutePosition, rm.targetRoutePosition, rm.originNodePosition, rm.targetNodePosition, rm.moveCost, rm.moveCostForMax)
                     print(rm.maxOriginRoutePosition, rm.maxTargetRoutePosition, rm.maxOriginNodePosition, rm.maxTargetNodePosition, rm.moveCost, rm.moveCostForMax)
                     originRoute: Route = self.sol.routes[rm.originRoutePosition]
+                    maxoriginRoute: Route = self.sol.routes[rm.maxOriginRoutePosition]
                     if rm.moveCost < 0 and rm.moveCostForMax <= 0:
-                        print("before apply", rm.originNodePosition)
-                        if originRoute.sequenceOfNodes[rm.maxOriginNodePosition].isTabuTillIterator > iter:
-                            # continue
-                            pass
+                        # print("before apply", rm.originNodePosition)
+                        # print("origin", rm.maxOriginNodePosition)
+                        # maxOrNode = maxoriginRoute.sequenceOfNodes[rm.maxOriginNodePosition]
+                        # orNode = originRoute.sequenceOfNodes[rm.originNodePosition]
+                        # if maxOrNode.isTabuTillIterator > iter:
+                        #     print(maxOrNode.id, "max is tabu")
+                        #     print(maxOrNode.isTabuTillIterator)
+                        #     self.SetTabuIterator(ma)
+                        # if orNode.isTabuTillIterator > iter:
+                        #     print(orNode.id, "is tabu")
+                            # print(orNode.isTabuTillIterator)
                         self.ApplyRelocationMove(rm, VNDIterator)
+
                         print("tabu after reloc move", originRoute.sequenceOfNodes[rm.originNodePosition].isTabuTillIterator)
-                        VNDIterator = VNDIterator + 1
 
                         self.searchTrajectory.append(self.sol.time_cost)
                         k = 0
                     else:
                         k += 1
+
 
             elif k == 2:
                 self.FindBestSwapMove(sm)
@@ -251,7 +260,6 @@ class Solver:
                     self.ApplySwapMove(sm)
                     # if draw:
                         # SolDrawer.draw(VNDIterator, self.sol, self.all_nodes)
-                    VNDIterator = VNDIterator + 1
                     self.searchTrajectory.append(self.sol.time_cost)
                     k = 0
                 else:
@@ -262,12 +270,12 @@ class Solver:
                     self.ApplyTwoOptMove(top)
                     # if draw:
                     #     SolDrawer.draw(VNDIterator, self.sol, self.all_nodes)
-                    VNDIterator = VNDIterator + 1
                     self.searchTrajectory.append(self.sol.time_cost)
                     k = 0
                 else:
                     k += 1
             solution_cost_trajectory.append(self.sol.time_cost)
+            VNDIterator = VNDIterator + 1
 
             if (self.sol.time_cost < self.bestSolution.time_cost):
                 self.bestSolution = self.cloneSolution(self.sol)
@@ -374,17 +382,19 @@ class Solver:
                         targetRtCostChange = self.time_matrix[F.id][B.id] + self.time_matrix[B.id][G.id] - self.time_matrix[F.id][G.id]
                         #λαθος σκεψη για εμας πρεπει να το κανουμε καπως αλλιως γιατι εμεις δεν υπολογιζουμε ετσι τον μιν του μαξ χρονο
                         moveCost = costAdded - costRemoved
-                        moveCostForMax = moveCost if (self.sol.routes[originRouteIndex] is self.sol.max_route) else 0
+                        moveCostForMax = originRtCostChange if (self.sol.routes[originRouteIndex] is self.sol.max_route) else 0
 
                         if self.MoveIsTabu(B, iterator, moveCost) or self.MoveIsTabu(B, iterator, moveCostForMax):
+                            print(B.id, "is tabu")
                             # print("node is", B)
                             continue
 
-                        if moveCostForMax < rm.moveCostForMax:
+                        if originRtCostChange < rm.moveCostForMax:
+                            print("origin", originRouteIndex, "target", targetRouteIndex, "orn", originNodeIndex, "tn", targetNodeIndex)
                             self.StoreBestMaxRelocationMove(originRouteIndex, targetRouteIndex, originNodeIndex,
                                                             targetNodeIndex, originRtCostChange, targetRtCostChange, rm,
                                                             moveCostForMax)
-                        if moveCost < rm.moveCost:
+                        elif moveCost < rm.moveCost:
                             self.StoreBestRelocationMove(originRouteIndex, targetRouteIndex, originNodeIndex,
                                                          targetNodeIndex, originRtCostChange, targetRtCostChange, rm,
                                                          moveCost)
@@ -613,7 +623,6 @@ class Solver:
     def SetTabuIterator(self, n: Node, iterator):
         n.isTabuTillIterator = iterator + self.tabuTenure
         print(n.id)
-        print(1)
         # n.isTabuTillIterator = iterator + random.randint(self.minTabuTenure, self.maxTabuTenure)
 
     def ReportSolution(self, sol):

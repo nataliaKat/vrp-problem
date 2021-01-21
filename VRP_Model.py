@@ -64,7 +64,6 @@ class Route:
     def __init__(self, dp, cap):
         self.sequenceOfNodes = []
         self.sequenceOfNodes.append(dp)
-        # self.sequenceOfNodes.append(no_cost_node)
         self.time = 0
         self.capacity = cap
         self.load = 0
@@ -72,7 +71,9 @@ class Route:
     def printRoute(self):
         nodes_string = ""
         for node in self.sequenceOfNodes:
-            nodes_string += str(node.id) + ", "
+            nodes_string += str(node.id) + ","
+        nodes_string = nodes_string[:-1]
+        nodes_string = nodes_string.replace(",201", "")
         print(nodes_string, self.time)
 
     def returnRoute(self):
@@ -82,4 +83,3 @@ class Route:
         nodes_string = nodes_string[:-1]
         nodes_string = nodes_string.replace(",201", "")
         return nodes_string
-        print(nodes_string, self.time)

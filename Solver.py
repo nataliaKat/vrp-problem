@@ -117,19 +117,19 @@ class Solver:
         self.sol = None
         self.bestSolution = None
         self.overallBestSol = None
-        self.rcl_size = 5 #isws gia arxh na to kaname 1
+        self.rcl_size = 3 #isws gia arxh na to kaname 1
         self.try_to_put_in_route=[False for r in range(self.total_vehicles)]
         self.minTabuTenure = 10
         self.maxTabuTenure = 50
-        self.tabuTenure = 30
+        self.tabuTenure = 20
         self.searchTrajectory = []
 
     def solve(self):
         solutions = set()
-        for i in range(50):
+        for i in range(8):
             self.setRoutedFlagToFalseForAllServiceLocations()
-            # self.minimumInsertions(i)
-            self.applyNearestNeighborMethod(i)
+            self.minimumInsertions(i)
+            # self.applyNearestNeighborMethod(i)
             self.addNoCostNode()
             cc = self.sol.time_cost
             if cc in solutions:
@@ -988,11 +988,14 @@ class Solver:
         insIndex = insertion.insertionPosition
         rt.sequenceOfNodes.insert(insIndex + 1, insLocation)
         rt.time += insertion.time
-        routes_sorted = self.sol.routes[:]
-        routes_sorted.sort(key=lambda x: x.time)
-        self.sol.time_cost = routes_sorted[-1].time
+        # routes_sorted = self.sol.routes[:]
+        # routes_sorted.sort(key=lambda x: x.time)
+        # self.sol.time_cost = routes_sorted[-1].time
         rt.load += insLocation.demand
         insLocation.isRouted = True
+        self.sol.max_route = max(self.sol.routes, key=lambda x: x.time)
+        self.sol.time_cost = self.sol.max_route.time
+
 
 
     def testSolution(self, filename):

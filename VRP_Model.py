@@ -74,3 +74,12 @@ class Route:
         for node in self.sequenceOfNodes:
             nodes_string += str(node.id) + ", "
         print(nodes_string, self.time)
+
+    def returnRoute(self):
+        nodes_string = ""
+        for node in self.sequenceOfNodes:
+            nodes_string += str(node.id) + ","
+        nodes_string = nodes_string[:-1]
+        nodes_string = nodes_string.replace(",201", "")
+        return nodes_string
+        print(nodes_string, self.time)

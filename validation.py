@@ -71,7 +71,7 @@ for i in range(0, len(all_nodes)):
 
 def import_solution(all_nodes):
     sol = Solution()
-    f = open("sol.txt", "r")
+    f = open("Solution.txt", "r")
     line = 0
     for x in f:
         if line == 0:

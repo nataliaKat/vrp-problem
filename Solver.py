@@ -117,7 +117,7 @@ class Solver:
         self.sol = None
         self.bestSolution = None
         self.overallBestSol = None
-        self.rcl_size = 3 #isws gia arxh na to kaname 1
+        self.rcl_size = 5 #isws gia arxh na to kaname 1
         self.try_to_put_in_route=[False for r in range(self.total_vehicles)]
         self.minTabuTenure = 10
         self.maxTabuTenure = 50
@@ -126,29 +126,35 @@ class Solver:
 
     def solve(self):
         solutions = set()
-        for i in range(8):
-            self.setRoutedFlagToFalseForAllServiceLocations()
-            self.minimumInsertions(i)
-            # self.applyNearestNeighborMethod(i)
-            self.addNoCostNode()
-            cc = self.sol.time_cost
-            if cc in solutions:
-                continue
-            solutions.add(cc)
-            # self.setRoutedFlagToFalseForAllServiceLocations()
-            # self.minimumInsertions(i*20)
-            # # self.applyNearestNeighborMethod(i*20)
-            # cc = self.sol.time_cost
-            # # for r in self.sol.routes:
-            # #     r.printRoute()
-            print("Time is", self.sol.time_cost)
-            # SolDrawer.draw('minimuminsertions', self.sol, self.all_nodes)
-            # self.ReportSolution(self.sol)
-            # self.LocalSearch(1)
-            self.VND()
-            if self.overallBestSol == None or self.overallBestSol.time_cost > self.sol.time_cost:
-                self.overallBestSol = self.cloneSolution(self.sol)
-            print('Cost: ', cc, ' LS:', self.sol.time_cost, 'BestOverall: ', self.overallBestSol.time_cost)
+        # for i in range(101,111):
+        self.setRoutedFlagToFalseForAllServiceLocations()
+        self.minimumInsertions(109)
+        # self.applyNearestNeighborMethod(i)
+        self.addNoCostNode()
+        cc = self.sol.time_cost
+        # if cc in solutions:
+        #     continue
+        solutions.add(cc)
+        # self.setRoutedFlagToFalseForAllServiceLocations()
+        # self.minimumInsertions(i*20)
+        # # self.applyNearestNeighborMethod(i*20)
+        # cc = self.sol.time_cost
+        # # for r in self.sol.routes:
+        # #     r.printRoute()
+        print("Time is", self.sol.time_cost)
+        # SolDrawer.draw('minimuminsertions', self.sol, self.all_nodes)
+        # self.ReportSolution(self.sol)
+        # self.LocalSearch(1)
+        self.VND()
+        filename = "Solution.txt"
+        file = open(filename, "w+")
+        file.write(str(self.sol.time_cost) + "\n")
+        for r in self.sol.routes:
+            file.write(r.returnRoute() + "\n")
+            r.printRoute()
+        if self.overallBestSol == None or self.overallBestSol.time_cost > self.sol.time_cost:
+            self.overallBestSol = self.cloneSolution(self.sol)
+        print('Cost: ', cc, ' LS:', self.sol.time_cost, 'BestOverall: ', self.overallBestSol.time_cost)
         SolDrawer.draw('localsearch', self.overallBestSol, self.all_nodes)
 
     def addNoCostNode(self):
@@ -279,6 +285,8 @@ class Solver:
 
             if (self.sol.time_cost < self.bestSolution.time_cost):
                 self.bestSolution = self.cloneSolution(self.sol)
+            if VNDIterator > 550:
+                break;
         # SolDrawer.drawTrajectory(self.searchTrajectory)
 
 

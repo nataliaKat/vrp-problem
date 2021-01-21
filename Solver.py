@@ -936,12 +936,12 @@ class Solver:
 
             if (bestInsertion.serviceLocation is not None):
                 self.applyLocationInsertionAllPositions(bestInsertion)
-                self.try_to_put_in_route = [False for r in range(self.total_vehicles)]
+                self.try_to_put_in_route=[False for r in range(self.total_vehicles)]
                 insertions += 1
+
 
             if (modelIsFeasible == False):
                 print('FeasibilityIssue')
-                # reportSolution
 
 
     def identifyBestInsertionAllPositions(self, bestInsertion, rt, itr = 0):
@@ -951,8 +951,8 @@ class Solver:
             candidateServLoc: Node = self.service_locations[i]
             if candidateServLoc.isRouted is False:
                 if rt.load + candidateServLoc.demand <= rt.capacity:
-                    if len(rt.sequenceOfNodes) == 1:
-                        trialTime = self.time_matrix[0][candidateServLoc.id]
+                    if len(rt.sequenceOfNodes)==1:
+                        trialTime=self.time_matrix[0][candidateServLoc.id]
                         bestInsertion.time = trialTime
                         bestInsertion.serviceLocation = candidateServLoc
                         bestInsertion.route = rt
@@ -985,13 +985,15 @@ class Solver:
     def applyLocationInsertionAllPositions(self, insertion):
         insLocation = insertion.serviceLocation
         rt = insertion.route
-        # before the second depot occurrence
         insIndex = insertion.insertionPosition
         rt.sequenceOfNodes.insert(insIndex + 1, insLocation)
         rt.time += insertion.time
-        self.CalculateTotalCost(self.sol)
+        routes_sorted = self.sol.routes[:]
+        routes_sorted.sort(key=lambda x: x.time)
+        self.sol.time_cost = routes_sorted[-1].time
         rt.load += insLocation.demand
         insLocation.isRouted = True
+
 
     def testSolution(self, filename):
         f = open(filename)

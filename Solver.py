@@ -129,7 +129,7 @@ class Solver:
         print("Time is", self.sol.time_cost)
 
         self.VND()
-        filename = "Solution.txt"
+        filename = "sol.txt"
         file = open(filename, "w+")
         file.write(str(self.sol.time_cost) + "\n")
         for r in self.sol.routes:
@@ -137,66 +137,12 @@ class Solver:
             r.printRoute()
         if self.overallBestSol == None or self.overallBestSol.time_cost > self.sol.time_cost:
             self.overallBestSol = self.cloneSolution(self.sol)
-        print('Cost: ', cc, ' LS:', self.sol.time_cost, 'BestOverall: ', self.overallBestSol.time_cost)
-        SolDrawer.draw('localsearch', self.overallBestSol, self.all_nodes)
+        print('Cost: ', cc, 'VND: ', self.sol.time_cost, 'BestOverall: ', self.overallBestSol.time_cost)
+        SolDrawer.draw('vndsol', self.overallBestSol, self.all_nodes)
 
     def addNoCostNode(self):
         for rt in self.sol.routes:
             rt.sequenceOfNodes.append(self.no_cost_node)
-
-    def LocalSearch(self, operator):
-        solution_cost_trajectory = []
-
-        self.bestSolution = self.cloneSolution(self.sol)
-        terminationCondition = False
-        localSearchIterator = 0
-
-        rm = RelocationMove()
-        sm = SwapMove()
-        top = TwoOptMove()
-
-        while terminationCondition is False:
-
-            self.InitializeOperators(rm, sm, top)
-
-            # Relocations
-            if operator == 0:
-                self.FindBestRelocationMove(rm, localSearchIterator)
-                if rm.originRoutePosition is not None or rm.maxOriginRoutePosition is not None:
-                    # μηπως να κανεις συνεχως apply
-                    # print(rm.originRoutePosition, rm.targetRoutePosition, rm.originNodePosition, rm.targetNodePosition, rm.moveCost, rm.moveCostForMax)
-                    if rm.moveCost < 0 and rm.moveCostForMax <= 0:
-                        self.ApplyRelocationMove(rm, localSearchIterator)
-                    else:
-                        terminationCondition = True
-            # Swaps
-            elif operator == 1:
-                self.FindBestSwapMove(sm)
-                if sm.positionOfFirstRoute is not None:
-                    self.ApplySwapMove(sm)
-                else:
-                        terminationCondition = True
-                        operator = 2
-            elif operator == 2:
-                self.FindBestTwoOptMove(top)
-                if top.positionOfFirstRoute is not None:
-                    # if top.moveCost < 0:
-                    self.ApplyTwoOptMove(top)
-                else:
-                    # terminationCondition = True
-                    operator = 0
-
-            self.TestSolution()
-            solution_cost_trajectory.append(self.sol.time_cost)
-
-
-            if (self.sol.time_cost < self.bestSolution.time_cost):
-                self.bestSolution = self.cloneSolution(self.sol)
-            if localSearchIterator > 5000:
-                terminationCondition = True
-            localSearchIterator = localSearchIterator + 1
-
-        self.sol = self.bestSolution
 
     def VND(self):
         self.bestSolution = self.cloneSolution(self.sol)
@@ -245,55 +191,6 @@ class Solver:
             if (self.sol.time_cost < self.bestSolution.time_cost):
                 self.bestSolution = self.cloneSolution(self.sol)
         SolDrawer.drawTrajectory(self.searchTrajectory)
-
-
-    def VNDrandom(self):
-        self.bestSolution = self.cloneSolution(self.sol)
-        VNDIterator = 0
-        kmax = 2
-        rm = RelocationMove()
-        sm = SwapMove()
-        top = TwoOptMove()
-        random.seed(1)
-        k = 1
-        draw = True
-        done=0
-
-        while done<3:
-            self.InitializeOperators(rm, sm, top)
-            if k == 1:
-                self.FindBestRelocationMove(rm)
-                if rm.originRoutePosition is not None:
-                    self.ApplyRelocationMove(rm)
-                    VNDIterator = VNDIterator + 1
-                    self.searchTrajectory.append(self.sol.time_cost)
-                    # print(self.sol.time_cost)
-                    k = random.randint(0,2)
-                else:
-                    done +=1
-            elif k == 2:
-                self.FindBestSwapMove(sm)
-                if sm.positionOfFirstRoute is not None:
-                    self.ApplySwapMove(sm)
-                    VNDIterator = VNDIterator + 1
-                    self.searchTrajectory.append(self.sol.time_cost)
-                    k = random.randint(0,2)
-                else:
-                    done +=1
-            elif k == 0:
-                self.FindBestTwoOptMove(top)
-                if top.positionOfFirstRoute is not None:
-                    self.ApplyTwoOptMove(top)
-                    VNDIterator = VNDIterator + 1
-                    self.searchTrajectory.append(self.sol.time_cost)
-                    k = random.randint(0,2)
-                else:
-                    done +=1
-
-            if (self.sol.time_cost < self.bestSolution.time_cost):
-                self.bestSolution = self.cloneSolution(self.sol)
-
-        # SolDrawer.drawTrajectory(self.searchTrajectory)
 
     def cloneRoute(self, rt:Route):
         cloned = Route(self.depot, self.capacity)
@@ -724,65 +621,6 @@ class Solver:
         else:
             return self.sol.routes[-1]
 
-    def identifyBest_NN_ofLastVisited(self, bestInsertion:ServiceLocationInsertion, rt, itr = 0):
-        random.seed(itr)
-        rcl = []
-        for i in range(0, len(self.service_locations)):
-            candidateLocation:Node = self.service_locations[i]
-            if candidateLocation.isRouted is False:
-                if rt.load + candidateLocation.demand <= rt.capacity:
-                    lastNodePresentInTheRoute = rt.sequenceOfNodes[-1]
-                    trialTime = self.time_matrix[lastNodePresentInTheRoute.id][candidateLocation.id]
-                    # Update rcl list
-                    if len(rcl) < self.rcl_size:
-                        new_tup = (trialTime, candidateLocation, rt)
-                        rcl.append(new_tup)
-                        rcl.sort(key=lambda x: x[0])
-                    elif trialTime < rcl[-1][0]:
-                        rcl.pop(len(rcl) - 1)
-                        new_tup = (trialTime, candidateLocation, rt)
-                        rcl.append(new_tup)
-                        rcl.sort(key=lambda x: x[0])
-        if len(rcl) > 0:
-            tup_index = random.randint(0, len(rcl) - 1)
-            tpl = rcl[tup_index]
-            bestInsertion.time = tpl[0]
-            bestInsertion.serviceLocation = tpl[1]
-            bestInsertion.route = tpl[2]
-
-    def applyLocationInsertion(self, insertion):
-        insLocation = insertion.serviceLocation
-        rt = insertion.route
-        rt.sequenceOfNodes.append(insLocation)
-        beforeInserted = rt.sequenceOfNodes[-2]
-        timeAdded = self.time_matrix[beforeInserted.id][insLocation.id]
-
-        rt.time += timeAdded
-        self.sol.max_route = max(self.sol.routes, key=lambda x: x.time)
-        self.sol.time_cost = self.sol.max_route.time
-        rt.load += insLocation.demand
-
-        insLocation.isRouted = True
-
-    def applyNearestNeighborMethod(self, itr=0):
-        modelIsFeasible = True
-        self.sol = Solution()
-        insertions = 0
-        self.openAllPaths()
-        while (insertions < len(self.service_locations)):
-            bestInsertion = ServiceLocationInsertion()
-            shortestroute: Route = self.getShortestRoute()
-            self.identifyBest_NN_ofLastVisited(bestInsertion, shortestroute, itr)
-            if (bestInsertion.serviceLocation is not None):
-                self.applyLocationInsertion(bestInsertion)
-                self.try_to_put_in_route=[False for r in range(self.total_vehicles)]
-                insertions += 1
-            else:
-                if shortestroute is not None and len(shortestroute.sequenceOfNodes) == 1:
-                    modelIsFeasible = False
-                    break
-        if (modelIsFeasible == False):
-            print('FeasibilityIssue')
 
     def openAllPaths(self):
         for i in range(self.total_vehicles):

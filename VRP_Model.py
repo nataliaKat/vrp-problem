@@ -74,7 +74,7 @@ class Route:
             nodes_string += str(node.id) + ","
         nodes_string = nodes_string[:-1]
         nodes_string = nodes_string.replace(",201", "")
-        print(nodes_string, self.time)
+        print(nodes_string)
 
     def returnRoute(self):
         nodes_string = ""

@@ -137,7 +137,7 @@ class Solver:
             r.printRoute()
         if self.overallBestSol == None or self.overallBestSol.time_cost > self.sol.time_cost:
             self.overallBestSol = self.cloneSolution(self.sol)
-        print('Cost: ', cc, 'VND: ', self.sol.time_cost, 'BestOverall: ', self.overallBestSol.time_cost)
+        print('Cost:', cc, 'VND:', self.sol.time_cost, 'BestOverall:', self.overallBestSol.time_cost)
         SolDrawer.draw('vndsol', self.overallBestSol, self.all_nodes)
 
     def addNoCostNode(self):
